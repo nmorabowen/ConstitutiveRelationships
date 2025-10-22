@@ -231,23 +231,37 @@ class UniaxialConfinedConcrete:
 
     def _interp_fcc_ratio(self, fl1_ratio: float, fl2_ratio: float) -> float:
         """
-        Interpolación bilineal simplificada sobre la tabla (filas = fl1, columnas = fl2).
-        Se aproxima tomando las dos columnas más cercanas a fl2 y luego se interpola en fl1.
+        Bilinear interpolation on the fcc/fco table.
+        Rows = fl1/fco (smallest), Cols = fl2/fco (largest).
         """
         header = self.header
         table = self.Table
 
-        dif = np.abs(header - fl2_ratio)
-        idx = np.argsort(dif)[:2]
-        x_range = np.array([header[idx[0]], header[idx[1]]])
-        col_lo = table[:, idx[0]]
-        col_hi = table[:, idx[1]]
+        # Clamp query to table domain
+        fl1 = float(np.clip(fl1_ratio, header.min(), header.max()))
+        fl2 = float(np.clip(fl2_ratio, header.min(), header.max()))
 
-        # Interpola a fl2 sobre cada fila
-        interp_rows = np.interp(fl2_ratio, x_range, np.vstack([col_lo, col_hi]).T)
-        # Luego interpola a fl1 (sobre el eje header)
-        fcc_ratio = float(np.interp(fl1_ratio, header, interp_rows))
+        # Find the two columns that bracket fl2
+        j = int(np.searchsorted(header, fl2))
+        j0 = max(j - 1, 0)
+        j1 = min(j, len(header) - 1)
+
+        x0 = header[j0]
+        x1 = header[j1]
+        c0 = table[:, j0]  # column at x0  (shape: 16,)
+        c1 = table[:, j1]  # column at x1  (shape: 16,)
+
+        # Linear weight in the fl2 direction (avoid div-by-zero when x0==x1)
+        denom = (x1 - x0) if x1 != x0 else 1.0
+        t = (fl2 - x0) / denom
+
+        # Interpolate each row between the two columns → 1-D array (len = 16)
+        interp_rows = c0 + t * (c1 - c0)
+
+        # Now interpolate along fl1 using that 1-D array
+        fcc_ratio = float(np.interp(fl1, header, interp_rows))
         return fcc_ratio
+
 
     def _compute_strengths(self) -> None:
         # Razones de presión efectiva adimensionales
