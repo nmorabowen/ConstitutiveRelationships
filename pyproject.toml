@@ -1,23 +1,36 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "ConstitutiveRelationships"
 version = "0.1.0"
-description = "Uniaxial constitutive models for steel and concrete (APE Ingeniería)"
+description = "Material Laws examples - Ladruño4ever"
 readme = "README.md"
-requires-python = ">=3.9"
-authors = [{ name = "Nicolás Mora Bowen", email = "nmorabowen@gmail.com" }]
-license = { text = "MIT" }
+authors = [
+    {name = "Nicolas Mora Bowen", email = "nmorabowen@gmail.com"}
+]
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.8"
 dependencies = [
-    "numpy>=1.26",
-    "matplotlib>=3.8"
+    "numpy",
+    "matplotlib",
+    "openseespy",
+    "pandas",
+    "scipy",
 ]
 
-[tool.setuptools.packages.find]
-include = ["ConstitutiveRelationships", "ConstitutiveRelationships.*"]
-
 [project.urls]
-Homepage = "https://github.com/nmorabowen/ConstitutiveRelationships"
-Issues = "https://github.com/nmorabowen/ConstitutiveRelationships/issues"
+"Homepage" = "https://github.com/nmorabowen/ConstitutiveRelationships"
+"Bug Tracker" = "https://github.com/nmorabowen/ConstitutiveRelationships/apeSees"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = {find = {where = ["src"]}} 
+
+[tool.setuptools.package-data]
+"*" = ["*.ipynb"]
